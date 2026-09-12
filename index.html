@@ -3,101 +3,189 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Losowanie miejsc</title>
+    <title>Rozkład Miejsc PRO</title>
     <style>
-        /* Główne style i nowoczesny Dark Mode */
         :root {
-            --bg-color: #0f172a; /* Głęboki, elegancki granat/czerń */
-            --table-color: #1e293b;
-            --table-border: #334155;
+            --bg-color: #0f172a;
+            --panel-bg: #1e293b;
+            --table-color: #334155;
+            --table-border: #475569;
             --seat-empty: #1e293b;
             --seat-border: #475569;
             --text-main: #f8fafc;
-            --text-muted: #64748b;
+            --text-muted: #94a3b8;
             --accent-glow: rgba(99, 102, 241, 0.4);
-            --gradient-start: #6366f1; /* Nowoczesny fiolet/indygo */
+            --gradient-start: #6366f1;
             --gradient-end: #a855f7;
+            --danger: #ef4444;
         }
 
         body {
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: system-ui, -apple-system, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-main);
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
             min-height: 100vh;
             margin: 0;
             overflow: hidden;
+            box-sizing: border-box;
+        }
+
+        * { box-sizing: inherit; }
+
+        /* Główne kontenery widoków */
+        .view {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 500px;
+            padding: 20px;
+        }
+
+        .view.active {
+            display: flex;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         h1 {
-            font-size: 28px;
+            font-size: 26px;
             font-weight: 700;
-            margin-bottom: 40px;
-            letter-spacing: -0.5px;
+            margin-bottom: 30px;
             background: linear-gradient(to right, #e2e8f0, #94a3b8);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
-        /* Przycisk w stylu Glass/Modern */
+        /* Przyciski */
         button {
             background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
             color: white;
             border: none;
-            padding: 14px 32px;
-            font-size: 16px;
+            padding: 12px 28px;
+            font-size: 15px;
             font-weight: 600;
-            border-radius: 12px;
+            border-radius: 10px;
             cursor: pointer;
             box-shadow: 0 10px 20px var(--accent-glow);
             transition: all 0.3s ease;
             text-transform: uppercase;
             letter-spacing: 1px;
-            margin-bottom: 60px;
             outline: none;
         }
 
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 15px 25px rgba(168, 85, 247, 0.5);
+        button:hover { transform: translateY(-2px); box-shadow: 0 15px 25px rgba(168, 85, 247, 0.5); }
+        button:active { transform: translateY(1px); }
+        
+        button.secondary {
+            background: var(--panel-bg);
+            border: 1px solid var(--seat-border);
+            box-shadow: none;
+            color: var(--text-main);
+            margin-bottom: 20px;
+        }
+        button.secondary:hover { background: var(--table-color); }
+
+        button.small { padding: 8px 16px; font-size: 13px; margin: 10px 0; }
+
+        .top-bar {
+            width: 100%;
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 10px;
         }
 
-        button:active {
-            transform: translateY(1px);
+        .icon-btn {
+            background: transparent;
+            box-shadow: none;
+            font-size: 24px;
+            padding: 8px;
+            color: var(--text-muted);
+            border-radius: 50%;
+        }
+        .icon-btn:hover { background: rgba(255,255,255,0.05); color: white; transform: none; box-shadow: none; }
+
+        /* Formularz ustawień */
+        .settings-card {
+            background: var(--panel-bg);
+            padding: 24px;
+            border-radius: 16px;
+            width: 100%;
+            border: 1px solid var(--seat-border);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         }
 
-        /* Kontener i Stół */
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label { display: block; font-size: 14px; color: var(--text-muted); margin-bottom: 8px; }
+
+        select, input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            background: var(--bg-color);
+            border: 1px solid var(--seat-border);
+            color: white;
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        select:focus, input[type="text"]:focus { border-color: var(--gradient-start); }
+
+        .name-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .btn-delete {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            padding: 0 16px;
+            box-shadow: none;
+        }
+        .btn-delete:hover { background: var(--danger); color: white; box-shadow: none; }
+
+        /* Stół i Miejsca */
         .layout-wrapper {
             position: relative;
-            width: 380px;
-            height: 200px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            width: 400px;
+            height: 400px;
+            margin: 20px 0 40px 0;
         }
 
-        .table {
+        .table-shape {
             position: absolute;
-            width: 260px;
-            height: 120px;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
             background-color: var(--table-color);
             border: 1px solid var(--table-border);
-            border-radius: 16px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), inset 0 2px 4px rgba(255, 255, 255, 0.05);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4), inset 0 2px 4px rgba(255,255,255,0.05);
             display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--text-muted);
-            font-weight: 600;
-            font-size: 20px;
-            letter-spacing: 2px;
-            text-transform: uppercase;
+            color: rgba(255,255,255,0.1);
+            font-weight: 700;
+            font-size: 24px;
+            letter-spacing: 4px;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* Miejsca */
+        /* Klasy kształtów */
+        .shape-round { width: 160px; height: 160px; border-radius: 50%; }
+        .shape-square { width: 140px; height: 140px; border-radius: 16px; }
+        .shape-rect { width: 220px; height: 100px; border-radius: 16px; }
+
         .seat {
             position: absolute;
             width: 80px;
@@ -115,59 +203,215 @@
             z-index: 10;
         }
 
-        /* Precyzyjne pozycjonowanie na krawędziach stołu */
-        .seat-0 { top: 12px; left: 80px; }       /* Góra, lewo */
-        .seat-1 { top: 12px; left: 220px; }      /* Góra, prawo */
-        .seat-2 { bottom: 12px; left: 80px; }    /* Dół, lewo */
-        .seat-3 { bottom: 12px; left: 220px; }   /* Dół, prawo */
-        .seat-4 { top: 78px; right: 0px; }       /* Prawy bok (krótszy) */
-
-        /* Stan dla wylosowanego miejsca */
         .seat.occupied {
-            background-color: #1e1b4b; /* Ciemny indygo */
-            border: 2px solid #818cf8; /* Jasny indygo */
+            background-color: #1e1b4b;
+            border: 2px solid #818cf8;
             color: #e0e7ff;
             box-shadow: 0 0 15px rgba(129, 140, 248, 0.3);
             transform: scale(1.05);
         }
 
-        /* Subtelna animacja pulsująca w trakcie czekania */
-        .seat.waiting {
-            opacity: 0.5;
-            transform: scale(0.95);
-        }
+        .seat.waiting { opacity: 0.5; transform: scale(0.95); }
 
-        /* Responsywność dla małych ekranów telefonicznych */
-        @media (max-width: 400px) {
-            .layout-wrapper { transform: scale(0.85); }
+        @media (max-width: 450px) {
+            .layout-wrapper { transform: scale(0.8); margin: 0; }
         }
     </style>
 </head>
 <body>
 
-    <h1>Rozkład Miejsc</h1>
-    <button onclick="drawSeats()">Losuj</button>
-
-    <div class="layout-wrapper">
-        <div class="table"></div>
+    <!-- WIDOK GŁÓWNY (LOSOWANIE) -->
+    <div id="view-main" class="view active">
+        <div class="top-bar">
+            <button class="icon-btn" onclick="openSettings()" title="Ustawienia">⚙️</button>
+        </div>
         
-        <div id="seat-0" class="seat seat-0">Wolne</div>
-        <div id="seat-1" class="seat seat-1">Wolne</div>
-        <div id="seat-2" class="seat seat-2">Wolne</div>
-        <div id="seat-3" class="seat seat-3">Wolne</div>
-        <div id="seat-4" class="seat seat-4">Wolne</div>
+        <h1>Rozkład Miejsc</h1>
+        <button onclick="drawSeats()">Losuj miejsca</button>
+
+        <div class="layout-wrapper" id="layout-wrapper">
+            <div id="table-element" class="table-shape shape-rect">STÓŁ</div>
+            <!-- Miejsca będą generowane tutaj przez JS -->
+        </div>
+    </div>
+
+    <!-- WIDOK USTAWIEŃ -->
+    <div id="view-settings" class="view">
+        <h1>Ustawienia</h1>
+        
+        <div class="settings-card">
+            <div class="input-group">
+                <label>Kształt stołu:</label>
+                <select id="input-shape">
+                    <option value="rect">Prostokątny</option>
+                    <option value="round">Okrągły</option>
+                    <option value="square">Kwadratowy</option>
+                </select>
+            </div>
+
+            <div class="input-group">
+                <label>Członkowie rodziny (kto losuje):</label>
+                <div id="names-container"></div>
+                <button class="secondary small" onclick="addNameInput()">➕ Dodaj osobę</button>
+            </div>
+
+            <button style="width: 100%; margin-bottom: 0;" onclick="saveSettings()">Zapisz i wróć</button>
+        </div>
     </div>
 
     <script>
-        const people = ["mama", "tata", "Ala", "Zosia", "Iga"];
-        let isAnimating = false; // Zabezpieczenie przed wielokrotnym klikaniem
+        // Domyślne dane
+        let config = {
+            shape: 'rect',
+            names: ["mama", "tata", "Ala", "Zosia", "Iga"]
+        };
+
+        let isAnimating = false;
+
+        // Inicjalizacja przy starcie aplikacji
+        window.onload = () => {
+            const savedData = localStorage.getItem('tableConfig');
+            if (savedData) {
+                config = JSON.parse(savedData);
+            }
+            renderTable();
+        };
+
+        // --- ZARZĄDZANIE WIDOKAMI ---
+
+        function openSettings() {
+            document.getElementById('view-main').classList.remove('active');
+            document.getElementById('view-settings').classList.add('active');
+            
+            document.getElementById('input-shape').value = config.shape;
+            
+            const container = document.getElementById('names-container');
+            container.innerHTML = '';
+            config.names.forEach(name => addNameInput(name));
+        }
+
+        function saveSettings() {
+            const shape = document.getElementById('input-shape').value;
+            const nameInputs = document.querySelectorAll('.name-input');
+            const names = [];
+            
+            nameInputs.forEach(input => {
+                const val = input.value.trim();
+                if (val) names.push(val);
+            });
+
+            if (names.length === 0) {
+                alert("Musisz dodać przynajmniej jedną osobę!");
+                return;
+            }
+
+            config = { shape, names };
+            localStorage.setItem('tableConfig', JSON.stringify(config));
+
+            document.getElementById('view-settings').classList.remove('active');
+            document.getElementById('view-main').classList.add('active');
+            
+            renderTable();
+        }
+
+        function addNameInput(value = '') {
+            const container = document.getElementById('names-container');
+            const row = document.createElement('div');
+            row.className = 'name-row';
+            
+            row.innerHTML = `
+                <input type="text" class="name-input" value="${value}" placeholder="Imię...">
+                <button class="btn-delete" onclick="this.parentElement.remove()">❌</button>
+            `;
+            container.appendChild(row);
+        }
+
+        // --- MATEMATYKA I RYSOWANIE STOŁU ---
+
+        function renderTable() {
+            const wrapper = document.getElementById('layout-wrapper');
+            const table = document.getElementById('table-element');
+            
+            // Zmiana klasy kształtu stołu
+            table.className = `table-shape shape-${config.shape}`;
+
+            // Usuń stare krzesła
+            document.querySelectorAll('.seat').forEach(el => el.remove());
+
+            const count = config.names.length;
+            const positions = calculatePositions(config.shape, count);
+
+            // Generowanie nowych krzeseł na wyliczonych pozycjach
+            positions.forEach((pos, i) => {
+                const seat = document.createElement('div');
+                seat.className = 'seat waiting';
+                seat.id = `seat-${i}`;
+                seat.textContent = '...';
+                // Wyrównanie do środka krzesła (80x44 to rozmiar krzesła)
+                seat.style.left = `${pos.x - 40}px`; 
+                seat.style.top = `${pos.y - 22}px`;
+                wrapper.appendChild(seat);
+            });
+        }
+
+        // Genialny mały algorytm rozmieszczający elementy w zależności od kształtu
+        function calculatePositions(shape, count) {
+            const positions = [];
+            const cx = 200, cy = 200; // Środek kontenera 400x400
+
+            if (shape === 'round') {
+                const r = 125; // Promień ułożenia krzeseł
+                for(let i = 0; i < count; i++) {
+                    const angle = (i / count) * 2 * Math.PI - (Math.PI / 2);
+                    positions.push({ x: cx + r * Math.cos(angle), y: cy + r * Math.sin(angle) });
+                }
+            } else {
+                // Kwadrat lub Prostokąt (rozmieszczenie po obwodzie ścieżki wokół stołu)
+                const isRect = (shape === 'rect');
+                const tableW = isRect ? 220 : 140;
+                const tableH = isRect ? 100 : 140;
+                
+                // Wymiary ścieżki (stół + odstęp na krzesła)
+                const pathW = tableW + 85; 
+                const pathH = tableH + 85; 
+                
+                const perimeter = 2 * pathW + 2 * pathH;
+
+                for(let i = 0; i < count; i++) {
+                    let d = (i * perimeter) / count; // Odległość na obwodzie
+                    let x, y;
+
+                    if (d < pathW) { 
+                        // Góra
+                        x = cx - pathW/2 + d;
+                        y = cy - pathH/2;
+                    } else if (d < pathW + pathH) { 
+                        // Prawy bok
+                        x = cx + pathW/2;
+                        y = cy - pathH/2 + (d - pathW);
+                    } else if (d < 2*pathW + pathH) { 
+                        // Dół
+                        x = cx + pathW/2 - (d - (pathW + pathH));
+                        y = cy + pathH/2;
+                    } else { 
+                        // Lewy bok
+                        x = cx - pathW/2;
+                        y = cy + pathH/2 - (d - (2*pathW + pathH));
+                    }
+                    positions.push({ x, y });
+                }
+            }
+            return positions;
+        }
+
+        // --- LOSOWANIE I ANIMACJA ---
 
         function drawSeats() {
-            if (isAnimating) return;
+            if (isAnimating || config.names.length === 0) return;
             isAnimating = true;
 
-            // Algorytm Fishera-Yatesa do tasowania
-            let shuffled = [...people];
+            // Tasowanie imion
+            let shuffled = [...config.names];
             for (let i = shuffled.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
@@ -175,27 +419,26 @@
 
             const seats = document.querySelectorAll('.seat');
             
-            // Faza 1: Zresetowanie miejsc przed nowym losowaniem
+            // Faza przygotowania (ukrycie)
             seats.forEach(seat => {
                 seat.classList.remove('occupied');
                 seat.classList.add('waiting');
                 seat.textContent = '...';
             });
 
-            // Faza 2: Kaskadowe (pojedyncze) pojawianie się imion dla efektu "wow"
+            // Faza kaskadowego pokazywania wylosowanych miejsc
             shuffled.forEach((person, i) => {
                 setTimeout(() => {
                     const seatElement = document.getElementById(`seat-${i}`);
-                    seatElement.classList.remove('waiting');
-                    seatElement.classList.add('occupied');
-                    seatElement.textContent = person;
-                    
-                    // Odblokuj przycisk po ostatniej animacji
-                    if (i === 4) isAnimating = false;
-                }, (i + 1) * 200); // Każde miejsce pojawia się co 200ms
+                    if(seatElement) {
+                        seatElement.classList.remove('waiting');
+                        seatElement.classList.add('occupied');
+                        seatElement.textContent = person;
+                    }
+                    if (i === seats.length - 1) isAnimating = false;
+                }, (i + 1) * 250); 
             });
         }
     </script>
-
 </body>
 </html>
