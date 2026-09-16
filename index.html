@@ -3,11 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Losowanie miejsc</title>
+    <title>Losowanie: Stół i Rowery</title>
     <style>
-        /* Główne style i nowoczesny Dark Mode */
         :root {
-            --bg-color: #0f172a; /* Głęboki, elegancki granat/czerń */
+            /* Skala typograficzna (Gwarantuje spójność) */
+            --text-h1: 28px;
+            --text-h2: 24px;
+            --text-lg: 20px; /* Napis Stół */
+            --text-base: 16px; /* Imiona, przyciski, numery */
+            
+            /* Kolory stołu */
+            --bg-color: #0f172a;
             --table-color: #1e293b;
             --table-border: #334155;
             --seat-empty: #1e293b;
@@ -15,8 +21,13 @@
             --text-main: #f8fafc;
             --text-muted: #64748b;
             --accent-glow: rgba(99, 102, 241, 0.4);
-            --gradient-start: #6366f1; /* Nowoczesny fiolet/indygo */
+            --gradient-start: #6366f1;
             --gradient-end: #a855f7;
+            
+            /* Kolory rowerów */
+            --bike-glow: rgba(16, 185, 129, 0.4);
+            --bike-start: #10b981;
+            --bike-end: #3b82f6;
         }
 
         body {
@@ -26,29 +37,33 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
             min-height: 100vh;
             margin: 0;
-            overflow: hidden;
+            padding: 40px 20px;
+            box-sizing: border-box;
+            overflow-x: hidden;
         }
 
-        h1 {
-            font-size: 28px;
+        h1, h2 {
             font-weight: 700;
-            margin-bottom: 40px;
+            margin-bottom: 20px;
             letter-spacing: -0.5px;
             background: linear-gradient(to right, #e2e8f0, #94a3b8);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            text-align: center;
         }
 
-        /* Przycisk w stylu Glass/Modern */
+        h1 { font-size: var(--text-h1); }
+        h2 { font-size: var(--text-h2); margin-top: 20px; }
+
+        /* Główne style przycisków */
         button {
             background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
             color: white;
             border: none;
             padding: 14px 32px;
-            font-size: 16px;
+            font-size: var(--text-base);
             font-weight: 600;
             border-radius: 12px;
             cursor: pointer;
@@ -56,20 +71,20 @@
             transition: all 0.3s ease;
             text-transform: uppercase;
             letter-spacing: 1px;
-            margin-bottom: 60px;
             outline: none;
+            margin-bottom: 40px;
         }
 
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 15px 25px rgba(168, 85, 247, 0.5);
-        }
+        button:hover { transform: translateY(-2px); box-shadow: 0 15px 25px rgba(168, 85, 247, 0.5); }
+        button:active { transform: translateY(1px); }
 
-        button:active {
-            transform: translateY(1px);
+        .btn-bikes {
+            background: linear-gradient(135deg, var(--bike-start), var(--bike-end));
+            box-shadow: 0 10px 20px var(--bike-glow);
         }
+        .btn-bikes:hover { box-shadow: 0 15px 25px rgba(16, 185, 129, 0.5); }
 
-        /* Kontener i Stół */
+        /* --- STÓŁ --- */
         .layout-wrapper {
             position: relative;
             width: 380px;
@@ -77,6 +92,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            margin-bottom: 20px;
         }
 
         .table {
@@ -92,12 +108,11 @@
             justify-content: center;
             color: var(--text-muted);
             font-weight: 600;
-            font-size: 20px;
+            font-size: var(--text-lg);
             letter-spacing: 2px;
             text-transform: uppercase;
         }
 
-        /* Miejsca */
         .seat {
             position: absolute;
             width: 80px;
@@ -108,48 +123,100 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 14px;
+            font-size: var(--text-base);
             font-weight: 600;
             color: var(--text-muted);
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 10;
         }
 
-        /* Precyzyjne pozycjonowanie na krawędziach stołu */
-        .seat-0 { top: 12px; left: 80px; }       /* Góra, lewo */
-        .seat-1 { top: 12px; left: 220px; }      /* Góra, prawo */
-        .seat-2 { bottom: 12px; left: 80px; }    /* Dół, lewo */
-        .seat-3 { bottom: 12px; left: 220px; }   /* Dół, prawo */
-        .seat-4 { top: 78px; right: 0px; }       /* Prawy bok (krótszy) */
+        .seat-0 { top: 12px; left: 80px; }
+        .seat-1 { top: 12px; left: 220px; }
+        .seat-2 { bottom: 12px; left: 80px; }
+        .seat-3 { bottom: 12px; left: 220px; }
+        .seat-4 { top: 78px; right: 0px; }
 
-        /* Stan dla wylosowanego miejsca */
         .seat.occupied {
-            background-color: #1e1b4b; /* Ciemny indygo */
-            border: 2px solid #818cf8; /* Jasny indygo */
+            background-color: #1e1b4b;
+            border: 2px solid #818cf8;
             color: #e0e7ff;
             box-shadow: 0 0 15px rgba(129, 140, 248, 0.3);
             transform: scale(1.05);
         }
 
-        /* Subtelna animacja pulsująca w trakcie czekania */
-        .seat.waiting {
-            opacity: 0.5;
-            transform: scale(0.95);
+        /* --- ROWERY --- */
+        .bikes-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            width: 100%;
+            max-width: 320px;
         }
 
-        /* Responsywność dla małych ekranów telefonicznych */
+        .bike-card {
+            background-color: var(--seat-empty);
+            border: 1px solid var(--seat-border);
+            border-radius: 12px;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            font-size: var(--text-base);
+            font-weight: 600;
+            color: var(--text-muted);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .bike-card .position {
+            background-color: #334155;
+            color: #e2e8f0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            margin-right: 16px;
+            font-size: var(--text-base);
+            transition: all 0.4s ease;
+        }
+
+        .bike-card.occupied {
+            background-color: #064e3b; 
+            border: 1px solid #34d399; 
+            color: #ecfdf5;
+            box-shadow: 0 0 15px rgba(52, 211, 153, 0.2);
+            transform: scale(1.02);
+        }
+
+        .bike-card.occupied .position {
+            background-color: #34d399;
+            color: #064e3b;
+        }
+
+        /* Wspólna animacja ładowania */
+        .waiting { opacity: 0.5; transform: scale(0.95); }
+
+        .divider {
+            width: 100%;
+            max-width: 400px;
+            height: 1px;
+            background: var(--table-border);
+            margin: 30px 0;
+        }
+
         @media (max-width: 400px) {
-            .layout-wrapper { transform: scale(0.85); }
+            .layout-wrapper { transform: scale(0.85); margin-bottom: 0; }
         }
     </style>
 </head>
 <body>
 
-    <h1>Rozkład Miejsc</h1>
-    <button onclick="drawSeats()">Losuj</button>
+    <!-- SEKCJA STOŁU -->
+    <h1>Rozkład Miejsc przy Stole</h1>
+    <button onclick="drawSeats()">Losuj miejsca</button>
 
     <div class="layout-wrapper">
-        <div class="table"></div>
+        <div class="table">Stół</div>
         
         <div id="seat-0" class="seat seat-0">Wolne</div>
         <div id="seat-1" class="seat seat-1">Wolne</div>
@@ -158,31 +225,49 @@
         <div id="seat-4" class="seat seat-4">Wolne</div>
     </div>
 
+    <!-- LINIA ODDZIELAJĄCA -->
+    <div class="divider"></div>
+
+    <!-- SEKCJA ROWERÓW -->
+    <h2>Kolejność na Rowerach</h2>
+    <button class="btn-bikes" onclick="drawBikes()">Losuj rowery</button>
+
+    <div class="bikes-container">
+        <div id="bike-0" class="bike-card"><div class="position">1</div> <span class="name">...</span></div>
+        <div id="bike-1" class="bike-card"><div class="position">2</div> <span class="name">...</span></div>
+        <div id="bike-2" class="bike-card"><div class="position">3</div> <span class="name">...</span></div>
+    </div>
+
     <script>
-        const people = ["mama", "tata", "Ala", "Zosia", "Iga"];
-        let isAnimating = false; // Zabezpieczenie przed wielokrotnym klikaniem
+        // Listy uczestników
+        const peopleTable = ["mama", "tata", "Ala", "Zosia", "Iga"];
+        const peopleBikes = ["Ala", "Zosia", "Iga"];
+        
+        let isTableAnimating = false;
+        let isBikeAnimating = false;
 
-        function drawSeats() {
-            if (isAnimating) return;
-            isAnimating = true;
-
-            // Algorytm Fishera-Yatesa do tasowania
-            let shuffled = [...people];
+        function shuffleArray(array) {
+            let shuffled = [...array];
             for (let i = shuffled.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
             }
+            return shuffled;
+        }
 
+        function drawSeats() {
+            if (isTableAnimating) return;
+            isTableAnimating = true;
+
+            const shuffled = shuffleArray(peopleTable);
             const seats = document.querySelectorAll('.seat');
             
-            // Faza 1: Zresetowanie miejsc przed nowym losowaniem
             seats.forEach(seat => {
                 seat.classList.remove('occupied');
                 seat.classList.add('waiting');
                 seat.textContent = '...';
             });
 
-            // Faza 2: Kaskadowe (pojedyncze) pojawianie się imion dla efektu "wow"
             shuffled.forEach((person, i) => {
                 setTimeout(() => {
                     const seatElement = document.getElementById(`seat-${i}`);
@@ -190,9 +275,33 @@
                     seatElement.classList.add('occupied');
                     seatElement.textContent = person;
                     
-                    // Odblokuj przycisk po ostatniej animacji
-                    if (i === 4) isAnimating = false;
-                }, (i + 1) * 200); // Każde miejsce pojawia się co 200ms
+                    if (i === 4) isTableAnimating = false;
+                }, (i + 1) * 200);
+            });
+        }
+
+        function drawBikes() {
+            if (isBikeAnimating) return;
+            isBikeAnimating = true;
+
+            const shuffled = shuffleArray(peopleBikes);
+            const bikes = document.querySelectorAll('.bike-card');
+            
+            bikes.forEach(bike => {
+                bike.classList.remove('occupied');
+                bike.classList.add('waiting');
+                bike.querySelector('.name').textContent = '...';
+            });
+
+            shuffled.forEach((person, i) => {
+                setTimeout(() => {
+                    const bikeElement = document.getElementById(`bike-${i}`);
+                    bikeElement.classList.remove('waiting');
+                    bikeElement.classList.add('occupied');
+                    bikeElement.querySelector('.name').textContent = person;
+                    
+                    if (i === 2) isBikeAnimating = false;
+                }, (i + 1) * 200);
             });
         }
     </script>
