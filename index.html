@@ -2,18 +2,23 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Losowanie: Stół i Rowery</title>
+    
+    <!-- Google Fonts: Plus Jakarta Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700&display=swap" rel="stylesheet">
+
     <style>
         :root {
-            /* Skala typograficzna (Gwarantuje spójność) */
-            --text-h1: 28px;
-            --text-h2: 24px;
-            --text-lg: 20px; /* Napis Stół */
-            --text-base: 16px; /* Imiona, przyciski, numery */
+            /* Skala typograficzna */
+            --text-h1: 26px;
+            --text-lg: 18px;
+            --text-base: 16px;
             
             /* Kolory stołu */
             --bg-color: #0f172a;
@@ -33,23 +38,51 @@
             --bike-end: #3b82f6;
         }
 
-        body {
-            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            height: 100%;
             background-color: var(--bg-color);
             color: var(--text-main);
+            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+            overflow: hidden;
+        }
+
+        .snap-container {
+            height: 100dvh;
+            overflow-y: scroll;
+            scroll-snap-type: y mandatory;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .screen-section {
+            height: 100dvh;
+            scroll-snap-align: start;
+            scroll-snap-stop: always;
             display: flex;
             flex-direction: column;
             align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 40px 20px;
-            box-sizing: border-box;
-            overflow-x: hidden;
+            justify-content: center;
+            padding: max(20px, env(safe-area-inset-top)) 20px max(20px, env(safe-area-inset-bottom));
+            position: relative;
         }
 
-        h1, h2 {
+        button, .seat, .bike-card, .scroll-hint {
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        h1 {
+            font-size: var(--text-h1);
             font-weight: 700;
-            margin-bottom: 20px;
+            margin-bottom: 24px;
             letter-spacing: -0.5px;
             background: linear-gradient(to right, #e2e8f0, #94a3b8);
             -webkit-background-clip: text;
@@ -57,10 +90,6 @@
             text-align: center;
         }
 
-        h1 { font-size: var(--text-h1); }
-        h2 { font-size: var(--text-h2); margin-top: 20px; }
-
-        /* Główne style przycisków */
         button {
             background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
             color: white;
@@ -75,33 +104,30 @@
             text-transform: uppercase;
             letter-spacing: 1px;
             outline: none;
-            margin-bottom: 40px;
+            margin-bottom: 30px;
         }
 
-        button:hover { transform: translateY(-2px); box-shadow: 0 15px 25px rgba(168, 85, 247, 0.5); }
-        button:active { transform: translateY(1px); }
+        button:active { transform: scale(0.97); }
 
         .btn-bikes {
             background: linear-gradient(135deg, var(--bike-start), var(--bike-end));
             box-shadow: 0 10px 20px var(--bike-glow);
         }
-        .btn-bikes:hover { box-shadow: 0 15px 25px rgba(16, 185, 129, 0.5); }
 
         /* --- STÓŁ --- */
         .layout-wrapper {
             position: relative;
-            width: 380px;
-            height: 200px;
+            width: 360px;
+            height: 190px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 20px;
         }
 
         .table {
             position: absolute;
-            width: 260px;
-            height: 120px;
+            width: 240px;
+            height: 110px;
             background-color: var(--table-color);
             border: 1px solid var(--table-border);
             border-radius: 4px;
@@ -118,8 +144,8 @@
 
         .seat {
             position: absolute;
-            width: 80px;
-            height: 44px;
+            width: 76px;
+            height: 42px;
             background-color: var(--seat-empty);
             border: 2px dashed var(--seat-border);
             border-radius: 10px;
@@ -133,11 +159,11 @@
             z-index: 10;
         }
 
-        .seat-0 { top: 12px; left: 80px; }
-        .seat-1 { top: 12px; left: 220px; }
-        .seat-2 { bottom: 12px; left: 80px; }
-        .seat-3 { bottom: 12px; left: 220px; }
-        .seat-4 { top: 78px; right: 0px; }
+        .seat-0 { top: 10px; left: 70px; }
+        .seat-1 { top: 10px; left: 214px; }
+        .seat-2 { bottom: 10px; left: 70px; }
+        .seat-3 { bottom: 10px; left: 214px; }
+        .seat-4 { top: 74px; right: 0px; }
 
         .seat.occupied {
             background-color: #1e1b4b;
@@ -196,58 +222,122 @@
             color: #064e3b;
         }
 
-        /* Wspólna animacja ładowania */
         .waiting { opacity: 0.5; transform: scale(0.95); }
 
-        .divider {
-            width: 100%;
-            max-width: 400px;
-            height: 1px;
-            background: var(--table-border);
-            margin: 30px 0;
+        /* Wskaźniki przewijania */
+        .scroll-hint {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            font-size: 12px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
         }
 
-        @media (max-width: 400px) {
-            .layout-wrapper { transform: scale(0.85); margin-bottom: 0; }
+        .scroll-hint-down {
+            bottom: max(16px, env(safe-area-inset-bottom));
+            animation: bounce-down 2s infinite;
+        }
+
+        .scroll-hint-up {
+            top: max(16px, env(safe-area-inset-top));
+            animation: bounce-up 2s infinite;
+        }
+
+        .scroll-hint svg {
+            width: 22px;
+            height: 22px;
+            fill: none;
+            stroke: var(--text-muted);
+            stroke-width: 2.5;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        @keyframes bounce-down {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-6px); }
+            60% { transform: translateY(-3px); }
+        }
+
+        @keyframes bounce-up {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(6px); }
+            60% { transform: translateY(3px); }
+        }
+
+        @media (max-width: 380px) {
+            .layout-wrapper { transform: scale(0.85); }
         }
     </style>
 </head>
 <body>
 
-    <!-- SEKCJA STOŁU -->
-    <h1>Rozkład Miejsc przy Stole</h1>
-    <button onclick="drawSeats()">Losuj</button>
-
-    <div class="layout-wrapper">
-        <div class="table"></div>
+    <div class="snap-container" id="snapContainer">
         
-        <div id="seat-0" class="seat seat-0">Wolne</div>
-        <div id="seat-1" class="seat seat-1">Wolne</div>
-        <div id="seat-2" class="seat seat-2">Wolne</div>
-        <div id="seat-3" class="seat seat-3">Wolne</div>
-        <div id="seat-4" class="seat seat-4">Wolne</div>
-    </div>
+        <!-- EKRAN 1: STÓŁ -->
+        <section class="screen-section" id="section-table">
+            <h1>Rozkład Miejsc przy Stole</h1>
+            <button onclick="drawSeats()">Losuj</button>
 
-    <!-- LINIA ODDZIELAJĄCA -->
-    <div class="divider"></div>
+            <div class="layout-wrapper">
+                <div class="table">Stół</div>
+                <div id="seat-0" class="seat seat-0">Wolne</div>
+                <div id="seat-1" class="seat seat-1">Wolne</div>
+                <div id="seat-2" class="seat seat-2">Wolne</div>
+                <div id="seat-3" class="seat seat-3">Wolne</div>
+                <div id="seat-4" class="seat seat-4">Wolne</div>
+            </div>
 
-    <!-- SEKCJA ROWERÓW -->
-    <h2>Kolejność na Rowerach</h2>
-    <button class="btn-bikes" onclick="drawBikes()">Losuj</button>
+            <div class="scroll-hint scroll-hint-down" onclick="scrollToBikes()">
+                <span>Rowery</span>
+                <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"></path></svg>
+            </div>
+        </section>
 
-    <div class="bikes-container">
-        <div id="bike-0" class="bike-card"><div class="position">1</div> <span class="name">...</span></div>
-        <div id="bike-1" class="bike-card"><div class="position">2</div> <span class="name">...</span></div>
-        <div id="bike-2" class="bike-card"><div class="position">3</div> <span class="name">...</span></div>
+        <!-- EKRAN 2: ROWERY -->
+        <section class="screen-section" id="section-bikes">
+            <div class="scroll-hint scroll-hint-up" onclick="scrollToTable()">
+                <svg viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"></path></svg>
+                <span>Stół</span>
+            </div>
+
+            <h1>Kolejność na Rowerach</h1>
+            <button class="btn-bikes" onclick="drawBikes()">Losuj</button>
+
+            <div class="bikes-container">
+                <div id="bike-0" class="bike-card"><div class="position">1</div> <span class="name">...</span></div>
+                <div id="bike-1" class="bike-card"><div class="position">2</div> <span class="name">...</span></div>
+                <div id="bike-2" class="bike-card"><div class="position">3</div> <span class="name">...</span></div>
+            </div>
+        </section>
+
     </div>
 
     <script>
-        // Listy uczestników
         const peopleTable = ["mama", "tata", "Ala", "Zosia", "Iga"];
         const peopleBikes = ["Ala", "Zosia", "Iga"];
         
         let isTableAnimating = false;
         let isBikeAnimating = false;
+
+        function triggerHaptic() {
+            if ('vibrate' in navigator) {
+                navigator.vibrate(15);
+            }
+        }
+
+        function scrollToBikes() {
+            document.getElementById('section-bikes').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function scrollToTable() {
+            document.getElementById('section-table').scrollIntoView({ behavior: 'smooth' });
+        }
 
         function shuffleArray(array) {
             let shuffled = [...array];
@@ -260,6 +350,7 @@
 
         function drawSeats() {
             if (isTableAnimating) return;
+            triggerHaptic();
             isTableAnimating = true;
 
             const shuffled = shuffleArray(peopleTable);
@@ -285,6 +376,7 @@
 
         function drawBikes() {
             if (isBikeAnimating) return;
+            triggerHaptic();
             isBikeAnimating = true;
 
             const shuffled = shuffleArray(peopleBikes);
